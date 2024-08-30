@@ -33,7 +33,10 @@ implements ActionInterface<Infer<TypePayloadSchema>, Infer<TypeObjectSchema>>
 		{
 			return {
 				success: false,
-				messages: parsedPayload.error.errors.map((error) => ({code: EnumErrorCode.VALIDATION_ERROR, text: error.message}))
+				messages: parsedPayload.error.errors.map((error) => ({
+					code: EnumErrorCode.VALIDATION_ERROR,
+					text: `${error.message} (at ${error.path.join('.')})`
+				}))
 			};
 		}
 
@@ -46,7 +49,10 @@ implements ActionInterface<Infer<TypePayloadSchema>, Infer<TypeObjectSchema>>
 		{
 			return {
 				success: false,
-				messages: validatedResponse.error.errors.map((error) => ({code: EnumErrorCode.VALIDATION_ERROR, text: error.message}))
+				messages: validatedResponse.error.errors.map((error) => ({
+					code: EnumErrorCode.VALIDATION_ERROR,
+					text: `${error.message} (at ${error.path.join('.')})`
+				}))
 			};
 		}
 

@@ -61,7 +61,7 @@ describe('SchemaValidatedAction', () =>
 
 		// Assert that the action failed due to input validation error
 		expect(result.success).toBe(false);
-		expect(result.messages).toEqual([{ code: EnumErrorCode.VALIDATION_ERROR, text: 'Expected string, received number' }]);
+		expect(result.messages).toEqual([{ code: EnumErrorCode.VALIDATION_ERROR, text: 'Expected string, received number (at name)' }]);
 	});
 
 	it('should return validation error for invalid output', async () =>
@@ -96,40 +96,40 @@ describe('SchemaValidatedAction', () =>
 
 		// Assert that the action failed due to output validation error
 		expect(result.success).toBe(false);
-		expect(result.messages).toEqual([{ code: EnumErrorCode.VALIDATION_ERROR, text: 'Expected number, received string' }]);
+		expect(result.messages).toEqual([{ code: EnumErrorCode.VALIDATION_ERROR, text: 'Expected number, received string (at value)' }]);
 	});
 
 	it('should strip extra fields from the response data', async () => {
-        // Define the input and output schemas
-        const inputSchema = z.object({
-            name: z.string()
-        });
-        const outputSchema = z.object({
-            id: z.number()
-        });
+		// Define the input and output schemas
+		const inputSchema = z.object({
+			name: z.string()
+		});
+		const outputSchema = z.object({
+			id: z.number()
+		});
 
-        // Create a mock action that returns extra fields in the output
-        class ExtraFieldsMockAction implements ActionInterface<{ name: string }, { id: number } & { extraField: string }>
-        {
-            public async execute(_payload: { name: string }): Promise<TypeResponse<{ id: number } & { extraField: string }>>
-            {
-                return {
-                    success: true,
-                    data: { id: 1, extraField: 'this should be stripped' }, // Extra field that should be stripped
-                    messages: []
-                };
-            }
-        }
+		// Create a mock action that returns extra fields in the output
+		class ExtraFieldsMockAction implements ActionInterface<{ name: string }, { id: number } & { extraField: string }>
+		{
+			public async execute(_payload: { name: string }): Promise<TypeResponse<{ id: number } & { extraField: string }>>
+			{
+				return {
+					success: true,
+					data: { id: 1, extraField: 'this should be stripped' }, // Extra field that should be stripped
+					messages: []
+				};
+			}
+		}
 
-        const extraFieldsMockAction = new ExtraFieldsMockAction();
-        const validatedAction = new ZodSchemaValidatedAction(inputSchema, outputSchema, extraFieldsMockAction);
+		const extraFieldsMockAction = new ExtraFieldsMockAction();
+		const validatedAction = new ZodSchemaValidatedAction(inputSchema, outputSchema, extraFieldsMockAction);
 
-        // Execute the action with valid input
-        const result = await validatedAction.execute({ name: 'John Doe' });
+		// Execute the action with valid input
+		const result = await validatedAction.execute({ name: 'John Doe' });
 
-        // Assert that the action was successful and returned only the expected output
-        expect(result.success).toBe(true);
-        expect(result.data).toEqual({ id: 1 }); // The extraField should be stripped
-        expect((result.data as any).extraField).toBeUndefined(); // Ensure extraField is not present
-    });
+		// Assert that the action was successful and returned only the expected output
+		expect(result.success).toBe(true);
+		expect(result.data).toEqual({ id: 1 }); // The extraField should be stripped
+		expect((result.data as any).extraField).toBeUndefined(); // Ensure extraField is not present
+	});
 });
