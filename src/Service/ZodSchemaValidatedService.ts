@@ -1,4 +1,4 @@
-import { type ZodSchema, type infer as Infer, type SafeParseReturnType, ZodObject } from 'zod';
+import { type ZodSchema, type infer as Infer, type SafeParseReturnType } from 'zod';
 import { type ServiceInterface } from '../Interface/ServiceInterface';
 
 export class ZodSchemaValidatedService<TypePayloadSchema extends ZodSchema, TypeResponseSchema extends ZodSchema>
@@ -36,7 +36,7 @@ implements ServiceInterface<Infer<TypePayloadSchema>, SafeParseReturnType<any, I
 		const response = await this.service.execute(parsedPayload.data);
 
 		// Validate the response using the response schema
-		const parsedResponse = (this.responseSchema as unknown as ZodObject<any>).strip().safeParse(response);
+		const parsedResponse = this.responseSchema.safeParse(response);
 
 		return parsedResponse;
 	}

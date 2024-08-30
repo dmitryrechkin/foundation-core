@@ -1,4 +1,4 @@
-import { type ZodSchema, type infer as Infer, ZodObject } from 'zod';
+import { type ZodSchema, type infer as Infer } from 'zod';
 import { type TypeResponse } from '../Type/Response';
 import { type ActionInterface } from '../Interface/ActionInterface';
 import { EnumErrorCode } from '../Type/ErrorCode';
@@ -40,10 +40,7 @@ implements ActionInterface<Infer<TypePayloadSchema>, Infer<TypeObjectSchema>>
 		// Execute the wrapped action
 		const response = await this.action.execute(parsedPayload.data);
 
-		const validatedResponse = (this.objectSchema as unknown as ZodObject<any>).strip().safeParse(response.data);
-
-		// Re-assign validated output data
-		response.data = validatedResponse.data;
+		const validatedResponse = this.objectSchema.safeParse(response.data);
 
 		if (!validatedResponse.success)
 		{
@@ -52,6 +49,9 @@ implements ActionInterface<Infer<TypePayloadSchema>, Infer<TypeObjectSchema>>
 				messages: validatedResponse.error.errors.map((error) => ({code: EnumErrorCode.VALIDATION_ERROR, text: error.message}))
 			};
 		}
+
+		// Re-assign validated output data
+		response.data = validatedResponse.data;
 
 		return response;
 	}
