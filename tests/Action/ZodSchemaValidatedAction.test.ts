@@ -132,4 +132,29 @@ describe('SchemaValidatedAction', () =>
 		expect(result.data).toEqual({ id: 1 }); // The extraField should be stripped
 		expect((result.data as any).extraField).toBeUndefined(); // Ensure extraField is not present
 	});
+
+	it('should ignore empty strings for optional fields', async () =>
+	{
+		// Define the input and output schemas
+		const inputSchema = z.object({
+			name: z.string(),
+			email: z.string().optional(),
+			bookingDate: z.string().date().optional(),
+		});
+		const outputSchema = z.object({
+			id: z.number()
+		});
+	
+		// Create the action instance
+		const mockAction = new MockAction();
+		const validatedAction = new ZodSchemaValidatedAction(inputSchema, outputSchema, mockAction);
+	
+		// Execute the action with empty optional fields
+		const result = await validatedAction.execute({ name: 'John Doe', email: '', bookingDate: '' });
+	
+		// Assert that the action was successful and empty fields were treated as valid
+		expect(result.success).toBe(true);
+		expect(result.data).toEqual({ id: 1 });
+		expect(result.messages).toEqual([]);
+	});
 });

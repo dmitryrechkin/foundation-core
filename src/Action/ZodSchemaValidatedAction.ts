@@ -1,7 +1,8 @@
-import { type ZodSchema, type infer as Infer } from 'zod';
+import { type ZodSchema, type infer as Infer, ZodObject } from 'zod';
 import { type TypeResponse } from '../Type/Response';
 import { type ActionInterface } from '../Interface/ActionInterface';
 import { EnumErrorCode } from '../Type/ErrorCode';
+import { OptionalFieldStripperHelper } from '../Helper/OptionalFieldStripperHelper';
 
 export class ZodSchemaValidatedAction<TypePayloadSchema extends ZodSchema, TypeObjectSchema extends ZodSchema>
 implements ActionInterface<Infer<TypePayloadSchema>, Infer<TypeObjectSchema>>
@@ -28,7 +29,9 @@ implements ActionInterface<Infer<TypePayloadSchema>, Infer<TypeObjectSchema>>
 	public async execute(payload: Infer<TypePayloadSchema>): Promise<TypeResponse<Infer<TypeObjectSchema>>>
 	{
 		// Validate the input using the input schema
-		const parsedPayload = this.payloadSchema.safeParse(payload);
+		const parsedPayload = this.payloadSchema.safeParse(
+			OptionalFieldStripperHelper.stripEmptyStrings(payload, this.payloadSchema as unknown as ZodObject<any>)
+		);
 		if (!parsedPayload.success)
 		{
 			return {

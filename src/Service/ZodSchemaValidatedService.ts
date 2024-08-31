@@ -1,5 +1,6 @@
-import { type ZodSchema, type infer as Infer, type SafeParseReturnType } from 'zod';
+import { type ZodSchema, type infer as Infer, type SafeParseReturnType, ZodObject } from 'zod';
 import { type ServiceInterface } from '../Interface/ServiceInterface';
+import { OptionalFieldStripperHelper } from '../Helper/OptionalFieldStripperHelper';
 
 export class ZodSchemaValidatedService<TypePayloadSchema extends ZodSchema, TypeResponseSchema extends ZodSchema>
 implements ServiceInterface<Infer<TypePayloadSchema>, SafeParseReturnType<any, Infer<TypeResponseSchema>>>
@@ -26,7 +27,9 @@ implements ServiceInterface<Infer<TypePayloadSchema>, SafeParseReturnType<any, I
 	public async execute(payload: Infer<TypePayloadSchema>): Promise<SafeParseReturnType<any, Infer<TypeResponseSchema>>>
 	{
 		// Validate the payload using the input schema
-		const parsedPayload = this.payloadSchema.safeParse(payload);
+		const parsedPayload = this.payloadSchema.safeParse(
+			OptionalFieldStripperHelper.stripEmptyStrings(payload, this.payloadSchema as unknown as ZodObject<any>)
+		);
 		if (!parsedPayload.success)
 		{
 			return parsedPayload;
